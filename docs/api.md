@@ -10,7 +10,7 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
 
  * **class** - [object Object]
 
-## getListeners
+## getEventListeners
 
 <p>Returns the listener array for the specified event.<br />Will initialise the event object and listener arrays if required.<br />Will return an object if you use a regex search. The object contains keys for each matched event. So /ba[rz]/ might return an object containing bar and baz. But only if you have either defined them with defineEvent or added some listeners to them.<br />Each property in the object response is an array of listener functions.</p>
 
@@ -24,14 +24,14 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
  * **param** (Object[]) _listeners_ - Raw listener objects.
  * **return** (Function[]) - Just the listener functions.
 
-## getListenersAsObject
+## getEventListenersAsObject
 
-<p>Fetches the requested listeners via getListeners but will always return the results inside an object. This is mainly for internal use but others may find it useful.</p>
+<p>Fetches the requested listeners via getEventListeners but will always return the results inside an object. This is mainly for internal use but others may find it useful.</p>
 
  * **param** (String | RegExp) _evt_ - Name of the event to return the listeners from.
  * **return** (Object) - All listener functions for an event in an object.
 
-## addListener
+## addEventListener
 
 <p>Adds a listener function to the specified event.<br />The listener will not be added if it is a duplicate.<br />If the listener returns true then it will be removed after it is called.<br />If you pass a regular expression as the event name then the listener will be added to all events that match it.</p>
 
@@ -41,12 +41,12 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
 
 ## on
 
-<p>Alias of addListener</p>
+<p>Alias of addEventListener</p>
 
 
-## addOnceListener
+## addOnceEventListener
 
-<p>Semi-alias of addListener. It will add a listener that will be<br />automatically removed after it's first execution.</p>
+<p>Semi-alias of addEventListener. It will add a listener that will be<br />automatically removed after it's first execution.</p>
 
  * **param** (String | RegExp) _evt_ - Name of the event to attach the listener to.
  * **param** (Function) _listener_ - Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
@@ -54,7 +54,7 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
 
 ## once
 
-<p>Alias of addOnceListener.</p>
+<p>Alias of addOnceEventListener.</p>
 
 
 ## defineEvent
@@ -71,7 +71,7 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
  * **param** (String[]) _evts_ - An array of event names to define.
  * **return** (Object) - Current instance of EventEmitter for chaining.
 
-## removeListener
+## removeEventListener
 
 <p>Removes a listener function from the specified event.<br />When passed a regular expression as the event name, it will remove the listener from all events that match it.</p>
 
@@ -81,10 +81,10 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
 
 ## off
 
-<p>Alias of removeListener</p>
+<p>Alias of removeEventListener</p>
 
 
-## addListeners
+## addEventListeners
 
 <p>Adds listeners in bulk using the manipulateListeners method.<br />If you pass an object as the second argument you can add to multiple events at once. The object should contain key value pairs of events and listeners or listener arrays. You can also pass it an event name and an array of listeners to be added.<br />You can also pass it a regular expression to add the array of listeners to all events that match it.<br />Yeah, this function does quite a bit. That's probably a bad thing.</p>
 
@@ -92,7 +92,7 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
  * **param** (Function[]) _[listeners]_ - An optional array of listener functions to add.
  * **return** (Object) - Current instance of EventEmitter for chaining.
 
-## removeListeners
+## removeEventListeners
 
 <p>Removes listeners in bulk using the manipulateListeners method.<br />If you pass an object as the second argument you can remove from multiple events at once. The object should contain key value pairs of events and listeners or listener arrays.<br />You can also pass it an event name and an array of listeners to be removed.<br />You can also pass it a regular expression to remove the listeners from all events that match it.</p>
 
@@ -102,7 +102,7 @@ You may also be interested in [the guide](https://github.com/Wolfy87/EventEmitte
 
 ## manipulateListeners
 
-<p>Edits listeners in bulk. The addListeners and removeListeners methods both use this to do their job. You should really use those instead, this is a little lower level.<br />The first argument will determine if the listeners are removed (true) or added (false).<br />If you pass an object as the second argument you can add/remove from multiple events at once. The object should contain key value pairs of events and listeners or listener arrays.<br />You can also pass it an event name and an array of listeners to be added/removed.<br />You can also pass it a regular expression to manipulate the listeners of all events that match it.</p>
+<p>Edits listeners in bulk. The addEventListeners and removeEventListeners methods both use this to do their job. You should really use those instead, this is a little lower level.<br />The first argument will determine if the listeners are removed (true) or added (false).<br />If you pass an object as the second argument you can add/remove from multiple events at once. The object should contain key value pairs of events and listeners or listener arrays.<br />You can also pass it an event name and an array of listeners to be added/removed.<br />You can also pass it a regular expression to manipulate the listeners of all events that match it.</p>
 
  * **param** (Boolean) _remove_ - True if you want to remove listeners, false if you want to add.
  * **param** (String | Object | RegExp) _evt_ - An event name if you will pass an array of listeners next. An object if you wish to add/remove from multiple events at once.

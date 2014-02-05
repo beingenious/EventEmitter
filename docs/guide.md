@@ -99,17 +99,17 @@ This code simply creates an instance of EventEmitter to be used.
 
 ### Adding listeners
 
-A listener is a function that is executed when an event is emitted. You can add them in a multitude of ways, the simplest of which is with the `addListener` method.
+A listener is a function that is executed when an event is emitted. You can add them in a multitude of ways, the simplest of which is with the `addEventListener` method.
 
 ```javascript
 function listener() {
 	console.log('The foo event has been emitted.');
 }
 
-ee.addListener('foo', listener);
+ee.addEventListener('foo', listener);
 ```
 
-You can also add in bulk using the `addListeners` method (notice the "s" on the end). You can interact with addListeners in two ways, the first is to pass it an event name and array of listeners to add.
+You can also add in bulk using the `addEventListeners` method (notice the "s" on the end). You can interact with addEventListeners in two ways, the first is to pass it an event name and array of listeners to add.
 
 ```javascript
 function listener1() {
@@ -120,10 +120,10 @@ function listener2() {
 	console.log('TWO');
 }
 
-ee.addListeners('foo', [listener1, listener2]);
+ee.addEventListeners('foo', [listener1, listener2]);
 ```
 
-The second way of calling addListeners involves passing an object of event names and listeners. You can either pass a single listener for each event or an array, just as you can see above.
+The second way of calling addEventListeners involves passing an object of event names and listeners. You can either pass a single listener for each event or an array, just as you can see above.
 
 ```javascript
 function listener1() {
@@ -138,7 +138,7 @@ function listener3() {
 	console.log('THREE');
 }
 
-ee.addListeners({
+ee.addEventListeners({
 	foo: [listener1, listener2],
 	bar: listener3
 });
@@ -153,8 +153,8 @@ function listener() {
 	console.log('The foo event has been emitted.');
 }
 
-ee.addListener('foo', listener);
-ee.removeListener('foo', listener);
+ee.addEventListener('foo', listener);
+ee.removeEventListener('foo', listener);
 ```
 
 If you want a listener to remove itself after it has been called or after a condition has been met then all you need to do is return true.
@@ -172,7 +172,7 @@ function listener2() {
 	return true;
 }
 
-ee.addListeners('foo', [listener1, listener2]);
+ee.addEventListeners('foo', [listener1, listener2]);
 ee.emitEvent('foo');
 ```
 
@@ -184,19 +184,19 @@ function listener() {
 	return 'REMOVE-ME';
 }
 
-ee.addListener('foo', listener);
+ee.addEventListener('foo', listener);
 ee.setOnceReturnValue('REMOVE-ME');
 ee.emitEvent('foo');
 ```
 
-Alternatively you can use the `addOnceListener` method, or it's alias, `once`.
+Alternatively you can use the `addOnceEventListener` method, or it's alias, `once`.
 
 ```javascript
 function listener() {
 	// Do stuff
 }
 
-ee.addOnceListener('foo', listener);
+ee.addOnceEventListener('foo', listener);
 ee.emitEvent('foo');
 // The listener will be removed now...
 ee.emitEvent('foo');
@@ -215,7 +215,7 @@ function listener2() {
 	console.log('TWO');
 }
 
-ee.addListeners('foo', [listener1, listener2]);
+ee.addEventListeners('foo', [listener1, listener2]);
 ee.removeEvent('foo');
 ```
 
@@ -223,7 +223,7 @@ However, if you leave it blank and do not pass an event name, then **all** event
 
 ### Fetching the listeners
 
-If you really need to then you can get an array of all listeners attached to an event with the `getListeners` method.
+If you really need to then you can get an array of all listeners attached to an event with the `getEventListeners` method.
 
 ```javascript
 function listener1() {
@@ -234,8 +234,8 @@ function listener2() {
 	console.log('TWO');
 }
 
-ee.addListeners('foo', [listener1, listener2]);
-ee.getListeners('foo');
+ee.addEventListeners('foo', [listener1, listener2]);
+ee.getEventListeners('foo');
 ```
 
 ### Emitting events
@@ -251,7 +251,7 @@ function listener2() {
 	console.log('TWO');
 }
 
-ee.addListeners('foo', [listener1, listener2]);
+ee.addEventListeners('foo', [listener1, listener2]);
 ee.emitEvent('foo');
 ```
 
@@ -262,7 +262,7 @@ function adder(a, b) {
 	console.log(a + b);
 }
 
-ee.addListener('addStuff', adder);
+ee.addEventListener('addStuff', adder);
 ee.emitEvent('addStuff', [10, 20]);
 ```
 
@@ -270,13 +270,13 @@ ee.emitEvent('addStuff', [10, 20]);
 
 [Hebo](https://github.com/Hebo), from GitHub, [contributed three aliases](https://github.com/Wolfy87/EventEmitter/pull/35#issuecomment-9920932) to add, remove and emit. The aliases can be found in the [API documentation](https://github.com/Wolfy87/EventEmitter/blob/master/docs/api.md) but here is the mapping.
 
- * `on` - `addListener`
- * `off` - `removeListener`
+ * `on` - `addEventListener`
+ * `off` - `removeEventListener`
  * `trigger` - `emitEvent`
 
 I've also added one since then.
 
- * `once` - `addOnceListener`
+ * `once` - `addOnceEventListener`
 
 ### Using regular expressions
 
@@ -288,7 +288,7 @@ By defined I mean, it has to have some other listener added to it, or you have t
 
 ```javascript
 ee.defineEvents(['bar', 'baz']);
-ee.addListener(/ba[rz]/, function () {
+ee.addEventListener(/ba[rz]/, function () {
 	console.log('Now you are thinking with regular expressions.');
 });
 ee.emitEvent(/ba[rz]/);

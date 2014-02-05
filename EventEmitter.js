@@ -62,7 +62,7 @@
 	 * @param {String|RegExp} evt Name of the event to return the listeners from.
 	 * @return {Function[]|Object} All listener functions for the event.
 	 */
-	proto.getListeners = function getListeners(evt) {
+	proto.getEventListeners = function getEventListeners(evt) {
 		var events = this._getEvents();
 		var response;
 		var key;
@@ -102,13 +102,13 @@
 	};
 
 	/**
-	 * Fetches the requested listeners via getListeners but will always return the results inside an object. This is mainly for internal use but others may find it useful.
+	 * Fetches the requested listeners via getEventListeners but will always return the results inside an object. This is mainly for internal use but others may find it useful.
 	 *
 	 * @param {String|RegExp} evt Name of the event to return the listeners from.
 	 * @return {Object} All listener functions for an event in an object.
 	 */
-	proto.getListenersAsObject = function getListenersAsObject(evt) {
-		var listeners = this.getListeners(evt);
+	proto.getEventListenersAsObject = function getEventListenersAsObject(evt) {
+		var listeners = this.getEventListeners(evt);
 		var response;
 
 		if (listeners instanceof Array) {
@@ -129,8 +129,8 @@
 	 * @param {Function} listener Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
-	proto.addListener = function addListener(evt, listener) {
-		var listeners = this.getListenersAsObject(evt);
+	proto.addEventListener = function addEventListener(evt, listener) {
+		var listeners = this.getEventListenersAsObject(evt);
 		var listenerIsWrapped = typeof listener === 'object';
 		var key;
 
@@ -147,29 +147,29 @@
 	};
 
 	/**
-	 * Alias of addListener
+	 * Alias of addEventListener
 	 */
-	proto.on = alias('addListener');
+	proto.on = alias('addEventListener');
 
 	/**
-	 * Semi-alias of addListener. It will add a listener that will be
+	 * Semi-alias of addEventListener. It will add a listener that will be
 	 * automatically removed after it's first execution.
 	 *
 	 * @param {String|RegExp} evt Name of the event to attach the listener to.
 	 * @param {Function} listener Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
-	proto.addOnceListener = function addOnceListener(evt, listener) {
-		return this.addListener(evt, {
+	proto.addOnceEventListener = function addOnceEventListener(evt, listener) {
+		return this.addEventListener(evt, {
 			listener: listener,
 			once: true
 		});
 	};
 
 	/**
-	 * Alias of addOnceListener.
+	 * Alias of addOnceEventListener.
 	 */
-	proto.once = alias('addOnceListener');
+	proto.once = alias('addOnceEventListener');
 
 	/**
 	 * Defines an event name. This is required if you want to use a regex to add a listener to multiple events at once. If you don't do this then how do you expect it to know what event to add to? Should it just add to every possible match for a regex? No. That is scary and bad.
@@ -179,7 +179,7 @@
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
 	proto.defineEvent = function defineEvent(evt) {
-		this.getListeners(evt);
+		this.getEventListeners(evt);
 		return this;
 	};
 
@@ -204,8 +204,8 @@
 	 * @param {Function} listener Method to remove from the event.
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
-	proto.removeListener = function removeListener(evt, listener) {
-		var listeners = this.getListenersAsObject(evt);
+	proto.removeEventListener = function removeEventListener(evt, listener) {
+		var listeners = this.getEventListenersAsObject(evt);
 		var index;
 		var key;
 
@@ -223,9 +223,9 @@
 	};
 
 	/**
-	 * Alias of removeListener
+	 * Alias of removeEventListener
 	 */
-	proto.off = alias('removeListener');
+	proto.off = alias('removeEventListener');
 
 	/**
 	 * Adds listeners in bulk using the manipulateListeners method.
@@ -237,7 +237,7 @@
 	 * @param {Function[]} [listeners] An optional array of listener functions to add.
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
-	proto.addListeners = function addListeners(evt, listeners) {
+	proto.addEventListeners = function addEventListeners(evt, listeners) {
 		// Pass through to manipulateListeners
 		return this.manipulateListeners(false, evt, listeners);
 	};
@@ -252,13 +252,13 @@
 	 * @param {Function[]} [listeners] An optional array of listener functions to remove.
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
-	proto.removeListeners = function removeListeners(evt, listeners) {
+	proto.removeEventListeners = function removeEventListeners(evt, listeners) {
 		// Pass through to manipulateListeners
 		return this.manipulateListeners(true, evt, listeners);
 	};
 
 	/**
-	 * Edits listeners in bulk. The addListeners and removeListeners methods both use this to do their job. You should really use those instead, this is a little lower level.
+	 * Edits listeners in bulk. The addEventListeners and removeEventListeners methods both use this to do their job. You should really use those instead, this is a little lower level.
 	 * The first argument will determine if the listeners are removed (true) or added (false).
 	 * If you pass an object as the second argument you can add/remove from multiple events at once. The object should contain key value pairs of events and listeners or listener arrays.
 	 * You can also pass it an event name and an array of listeners to be added/removed.
@@ -272,8 +272,8 @@
 	proto.manipulateListeners = function manipulateListeners(remove, evt, listeners) {
 		var i;
 		var value;
-		var single = remove ? this.removeListener : this.addListener;
-		var multiple = remove ? this.removeListeners : this.addListeners;
+		var single = remove ? this.removeEventListener : this.addEventListener;
+		var multiple = remove ? this.removeEventListeners : this.addEventListeners;
 
 		// If evt is an object then pass each of it's properties to this method
 		if (typeof evt === 'object' && !(evt instanceof RegExp)) {
@@ -358,7 +358,7 @@
 	 * @return {Object} Current instance of EventEmitter for chaining.
 	 */
 	proto.emitEvent = function emitEvent(evt, args) {
-		var listeners = this.getListenersAsObject(evt);
+		var listeners = this.getEventListenersAsObject(evt);
 		var listener;
 		var i;
 		var key;
@@ -374,13 +374,13 @@
 					listener = listeners[key][i];
 
 					if (listener.once === true) {
-						this.removeListener(evt, listener.listener);
+						this.removeEventListener(evt, listener.listener);
 					}
 
 					response = listener.listener.apply(this, args || []);
 
 					if (response === this._getOnceReturnValue()) {
-						this.removeListener(evt, listener.listener);
+						this.removeEventListener(evt, listener.listener);
 					}
 				}
 			}

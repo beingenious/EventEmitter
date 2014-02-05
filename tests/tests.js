@@ -15,7 +15,7 @@
 	}
 
 	// Configure the tests
-	suite('getListeners', function() {
+	suite('getEventListeners', function() {
 		var ee;
 
 		setup(function() {
@@ -23,21 +23,21 @@
 		});
 
 		test('initialises the event object and a listener array', function() {
-			ee.getListeners('foo');
+			ee.getEventListeners('foo');
 			assert.deepEqual(ee._events, {
 				foo: []
 			});
 		});
 
 		test('does not overwrite listener arrays', function() {
-			var listeners = ee.getListeners('foo');
+			var listeners = ee.getEventListeners('foo');
 			listeners.push('bar');
 
 			assert.deepEqual(ee._events, {
 				foo: ['bar']
 			});
 
-			ee.getListeners('foo');
+			ee.getEventListeners('foo');
 
 			assert.deepEqual(ee._events, {
 				foo: ['bar']
@@ -48,11 +48,11 @@
 		{
 			var check = [];
 
-			ee.addListener('foo', function() { check.push(1); });
-			ee.addListener('bar', function() { check.push(2); return 'bar'; });
-			ee.addListener('baz', function() { check.push(3); return 'baz'; });
+			ee.addEventListener('foo', function() { check.push(1); });
+			ee.addEventListener('bar', function() { check.push(2); return 'bar'; });
+			ee.addEventListener('baz', function() { check.push(3); return 'baz'; });
 
-			var listeners = ee.getListeners(/ba[rz]/);
+			var listeners = ee.getEventListeners(/ba[rz]/);
 
 			assert.strictEqual(listeners.bar.length + listeners.baz.length, 2);
 			assert.strictEqual(listeners.bar[0].listener(), 'bar');
@@ -62,10 +62,10 @@
 		test('does not return matched sub-strings', function () {
 			var check = function () {};
 
-			ee.addListener('foo', function () {});
-			ee.addListener('fooBar', check);
+			ee.addEventListener('foo', function () {});
+			ee.addEventListener('fooBar', check);
 
-			var listeners = ee.getListeners('fooBar');
+			var listeners = ee.getEventListeners('fooBar');
 			assert.strictEqual(listeners.length, 1);
 			assert.strictEqual(listeners[0].listener, check);
 		});
@@ -97,7 +97,7 @@
 		});
 	});
 
-	suite('addListener', function() {
+	suite('addEventListener', function() {
 		var ee;
 		var fn1 = function(){};
 		var fn2 = function(){};
@@ -107,19 +107,19 @@
 		});
 
 		test('adds a listener to the specified event', function() {
-			ee.addListener('foo', fn1);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1]);
+			ee.addEventListener('foo', fn1);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1]);
 		});
 
 		test('does not allow duplicate listeners', function() {
-			ee.addListener('bar', fn1);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn1]);
+			ee.addEventListener('bar', fn1);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn1]);
 
-			ee.addListener('bar', fn2);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn1, fn2]);
+			ee.addEventListener('bar', fn2);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn1, fn2]);
 
-			ee.addListener('bar', fn1);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn1, fn2]);
+			ee.addEventListener('bar', fn1);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn1, fn2]);
 		});
 
 		test('allows you to add listeners by regex', function ()
@@ -127,15 +127,15 @@
 			var check = [];
 
 			ee.defineEvents(['bar', 'baz']);
-			ee.addListener('foo', function() { check.push(1); });
-			ee.addListener(/ba[rz]/, function() { check.push(2); });
+			ee.addEventListener('foo', function() { check.push(1); });
+			ee.addEventListener(/ba[rz]/, function() { check.push(2); });
 			ee.emitEvent(/ba[rz]/);
 
 			assert.strictEqual(flattenCheck(check), '2,2');
 		});
 	});
 
-	suite('addOnceListener', function () {
+	suite('addOnceEventListener', function () {
 		var ee;
 		var counter;
 		var fn1 = function() { counter++; };
@@ -146,12 +146,12 @@
 		});
 
 		test('once listeners can be added', function () {
-			ee.addOnceListener('foo', fn1);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1]);
+			ee.addOnceEventListener('foo', fn1);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1]);
 		});
 
 		test('listeners are only executed once', function () {
-			ee.addOnceListener('foo', fn1);
+			ee.addOnceEventListener('foo', fn1);
 			ee.emitEvent('foo');
 			ee.emitEvent('foo');
 			ee.emitEvent('foo');
@@ -159,13 +159,13 @@
 		});
 
 		test('listeners can be removed', function () {
-			ee.addOnceListener('foo', fn1);
-			ee.removeListener('foo', fn1);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), []);
+			ee.addOnceEventListener('foo', fn1);
+			ee.removeEventListener('foo', fn1);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), []);
 		});
 
 		test('can not cause infinite recursion', function () {
-			ee.addOnceListener('foo', function() {
+			ee.addOnceEventListener('foo', function() {
 				counter += 1;
 				this.emitEvent('foo');
 			});
@@ -174,7 +174,7 @@
 		});
 	});
 
-	suite('removeListener', function() {
+	suite('removeEventListener', function() {
 		var ee;
 		var fn1 = function(){};
 		var fn2 = function(){};
@@ -188,9 +188,9 @@
 		});
 
 		test('does nothing when the listener is not found', function() {
-			var orig = ee.getListeners('foo').length;
-			ee.removeListener('foo', fn1);
-			assert.lengthOf(ee.getListeners('foo'), orig);
+			var orig = ee.getEventListeners('foo').length;
+			ee.removeEventListener('foo', fn1);
+			assert.lengthOf(ee.getEventListeners('foo'), orig);
 		});
 
 		test('can handle removing events that have not been added', function() {
@@ -206,62 +206,62 @@
 		});
 
 		test('removes listeners', function() {
-			var listeners = ee.getListeners('bar');
+			var listeners = ee.getEventListeners('bar');
 
-			ee.addListener('bar', fn1);
-			ee.addListener('bar', fn2);
-			ee.addListener('bar', fn3);
-			ee.addListener('bar', fn3); // Make sure doubling up does nothing
-			ee.addListener('bar', fn4);
+			ee.addEventListener('bar', fn1);
+			ee.addEventListener('bar', fn2);
+			ee.addEventListener('bar', fn3);
+			ee.addEventListener('bar', fn3); // Make sure doubling up does nothing
+			ee.addEventListener('bar', fn4);
 			assert.deepEqual(ee.flattenListeners(listeners), [fn1, fn2, fn3, fn4]);
 
-			ee.removeListener('bar', fn3);
+			ee.removeEventListener('bar', fn3);
 			assert.deepEqual(ee.flattenListeners(listeners), [fn1, fn2, fn4]);
 
-			ee.removeListener('bar', fnX);
+			ee.removeEventListener('bar', fnX);
 			assert.deepEqual(ee.flattenListeners(listeners), [fn1, fn2, fn4]);
 
-			ee.removeListener('bar', fn1);
+			ee.removeEventListener('bar', fn1);
 			assert.deepEqual(ee.flattenListeners(listeners), [fn2, fn4]);
 
-			ee.removeListener('bar', fn4);
+			ee.removeEventListener('bar', fn4);
 			assert.deepEqual(ee.flattenListeners(listeners), [fn2]);
 
-			ee.removeListener('bar', fn2);
+			ee.removeEventListener('bar', fn2);
 			assert.deepEqual(ee.flattenListeners(ee._events.bar), []);
 		});
 
 		test('removes with a regex', function() {
-			ee.addListeners({
+			ee.addEventListeners({
 				foo: [fn1, fn2, fn3, fn4, fn5],
 				bar: [fn1, fn2, fn3, fn4, fn5],
 				baz: [fn1, fn2, fn3, fn4, fn5]
 			});
 
-			ee.removeListener(/ba[rz]/, fn3);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn3, fn2, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn5, fn4, fn2, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), [fn5, fn4, fn2, fn1]);
+			ee.removeEventListener(/ba[rz]/, fn3);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn3, fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn5, fn4, fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), [fn5, fn4, fn2, fn1]);
 		});
 	});
 
-	suite('getListenersAsObject', function () {
+	suite('getEventListenersAsObject', function () {
 		var ee;
 
 		setup(function() {
 			ee = new EventEmitter();
-			ee.addListener('bar', function(){});
-			ee.addListener('baz', function(){});
+			ee.addEventListener('bar', function(){});
+			ee.addEventListener('baz', function(){});
 		});
 
 		test('returns an object for strings', function () {
-			var listeners = ee.getListenersAsObject('bar');
+			var listeners = ee.getEventListenersAsObject('bar');
 			assert.isObject(listeners);
 			assert.lengthOf(listeners.bar, 1);
 		});
 
 		test('returns an object for regexs', function () {
-			var listeners = ee.getListenersAsObject(/ba[rz]/);
+			var listeners = ee.getEventListenersAsObject(/ba[rz]/);
 			assert.isObject(listeners);
 			assert.lengthOf(listeners.bar, 1);
 			assert.lengthOf(listeners.baz, 1);
@@ -282,7 +282,7 @@
 
 		test('defines an event when there are other events already', function () {
 			var f = function(){};
-			ee.addListener('foo', f);
+			ee.addEventListener('foo', f);
 			ee.defineEvent('bar');
 
 			assert.deepEqual(ee.flattenListeners(ee._events.foo), [f]);
@@ -291,7 +291,7 @@
 
 		test('does not overwrite existing events', function () {
 			var f = function(){};
-			ee.addListener('foo', f);
+			ee.addEventListener('foo', f);
 			ee.defineEvent('foo');
 			assert.deepEqual(ee.flattenListeners(ee._events.foo), [f]);
 		});
@@ -322,33 +322,33 @@
 		setup(function() {
 			ee = new EventEmitter();
 
-			ee.addListener('foo', fn1);
-			ee.addListener('foo', fn2);
-			ee.addListener('bar', fn3);
-			ee.addListener('bar', fn4);
-			ee.addListener('baz', fn5);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn3, fn4]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), [fn5]);
+			ee.addEventListener('foo', fn1);
+			ee.addEventListener('foo', fn2);
+			ee.addEventListener('bar', fn3);
+			ee.addEventListener('bar', fn4);
+			ee.addEventListener('baz', fn5);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn3, fn4]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), [fn5]);
 		});
 
 		test('removes all listeners for the specified event', function() {
 			ee.removeEvent('bar');
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), [fn5]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), [fn5]);
 
 			ee.removeEvent('baz');
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), []);
 		});
 
 		test('removes all events when no event is specified', function() {
 			ee.removeEvent();
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), []);
 		});
 
 		test('removes listeners when passed a regex', function ()
@@ -356,12 +356,12 @@
 			var check = [];
 			ee.removeEvent();
 
-			ee.addListener('foo', function() { check.push(1); return 'foo'; });
-			ee.addListener('bar', function() { check.push(2); return 'bar'; });
-			ee.addListener('baz', function() { check.push(3); return 'baz'; });
+			ee.addEventListener('foo', function() { check.push(1); return 'foo'; });
+			ee.addEventListener('bar', function() { check.push(2); return 'bar'; });
+			ee.addEventListener('baz', function() { check.push(3); return 'baz'; });
 
 			ee.removeEvent(/ba[rz]/);
-			var listeners = ee.getListeners('foo');
+			var listeners = ee.getEventListeners('foo');
 
 			assert.lengthOf(listeners, 1);
 			assert.strictEqual(listeners[0].listener(), 'foo');
@@ -369,14 +369,14 @@
 
 		test('can be used through the alias, removeAllListeners', function() {
 			ee.removeAllListeners('bar');
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), [fn5]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), [fn5]);
 
 			ee.removeAllListeners('baz');
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), []);
 		});
 	});
 
@@ -390,7 +390,7 @@
 		test('executes attached listeners', function() {
 			var run = false;
 
-			ee.addListener('foo', function() {
+			ee.addEventListener('foo', function() {
 				run = true;
 			});
 			ee.emitEvent('foo');
@@ -401,7 +401,7 @@
 		test('executes attached with a single argument', function() {
 			var key = null;
 
-			ee.addListener('bar', function(a) {
+			ee.addEventListener('bar', function(a) {
 				key = a;
 			});
 			ee.emitEvent('bar', [50]);
@@ -415,7 +415,7 @@
 		test('executes attached with arguments', function() {
 			var key = null;
 
-			ee.addListener('bar2', function(a, b) {
+			ee.addEventListener('bar2', function(a, b) {
 				key = a + b;
 			});
 			ee.emitEvent('bar2', [40, 2]);
@@ -426,11 +426,11 @@
 		test('executes multiple listeners', function() {
 			var check = [];
 
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); });
-			ee.addListener('baz', function() { check.push(3); });
-			ee.addListener('baz', function() { check.push(4); });
-			ee.addListener('baz', function() { check.push(5); });
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); });
+			ee.addEventListener('baz', function() { check.push(3); });
+			ee.addEventListener('baz', function() { check.push(4); });
+			ee.addEventListener('baz', function() { check.push(5); });
 
 			ee.emitEvent('baz');
 
@@ -441,13 +441,13 @@
 			var check = [];
 			var toRemove = function() { check.push('R'); };
 
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); });
-			ee.addListener('baz', toRemove);
-			ee.addListener('baz', function() { check.push(3); });
-			ee.addListener('baz', function() { check.push(4); });
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); });
+			ee.addEventListener('baz', toRemove);
+			ee.addEventListener('baz', function() { check.push(3); });
+			ee.addEventListener('baz', function() { check.push(4); });
 
-			ee.removeListener('baz', toRemove);
+			ee.removeEventListener('baz', toRemove);
 
 			ee.emitEvent('baz');
 
@@ -457,11 +457,11 @@
 		test('executes multiple listeners and removes those that return true', function() {
 			var check = [];
 
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); return true; });
-			ee.addListener('baz', function() { check.push(3); return false; });
-			ee.addListener('baz', function() { check.push(4); return 1; });
-			ee.addListener('baz', function() { check.push(5); return true; });
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); return true; });
+			ee.addEventListener('baz', function() { check.push(3); return false; });
+			ee.addEventListener('baz', function() { check.push(4); return 1; });
+			ee.addEventListener('baz', function() { check.push(5); return true; });
 
 			ee.emitEvent('baz');
 			ee.emitEvent('baz');
@@ -472,10 +472,10 @@
 		test('can remove listeners that return true and also define another listener within them', function () {
 			var check = [];
 
-			ee.addListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(1); });
 
-			ee.addListener('baz', function() {
-				ee.addListener('baz', function() {
+			ee.addEventListener('baz', function() {
+				ee.addEventListener('baz', function() {
 					check.push(2);
 				});
 
@@ -483,9 +483,9 @@
 				return true;
 			});
 
-			ee.addListener('baz', function() { check.push(4); return false; });
-			ee.addListener('baz', function() { check.push(5); return 1; });
-			ee.addListener('baz', function() { check.push(6); return true; });
+			ee.addEventListener('baz', function() { check.push(4); return false; });
+			ee.addEventListener('baz', function() { check.push(5); return 1; });
+			ee.addEventListener('baz', function() { check.push(6); return true; });
 
 			ee.emitEvent('baz');
 			ee.emitEvent('baz');
@@ -497,9 +497,9 @@
 		{
 			var check = [];
 
-			ee.addListener('foo', function() { check.push(1); });
-			ee.addListener('bar', function() { check.push(2); });
-			ee.addListener('baz', function() { check.push(3); });
+			ee.addEventListener('foo', function() { check.push(1); });
+			ee.addEventListener('bar', function() { check.push(2); });
+			ee.addEventListener('baz', function() { check.push(3); });
 
 			ee.emitEvent(/ba[rz]/);
 			assert.strictEqual(flattenCheck(check), '2,3');
@@ -507,7 +507,7 @@
 
 		test('global object is defined', function()
 		{
-			ee.addListener('foo', function() {
+			ee.addEventListener('foo', function() {
 				assert.equal(this, ee);
 			});
 
@@ -529,17 +529,17 @@
 
 		test('manipulates multiple with an array', function() {
 			ee.manipulateListeners(false, 'foo', [fn1, fn2, fn3, fn4, fn5]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn3, fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn3, fn2, fn1]);
 
 			ee.manipulateListeners(true, 'foo', [fn1, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn3]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn3]);
 
 			ee.manipulateListeners(true, 'foo', [fn3, fn5]);
 			ee.manipulateListeners(false, 'foo', [fn4, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn4, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn4, fn1]);
 
 			ee.manipulateListeners(true, 'foo', [fn4, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), []);
 		});
 
 		test('manipulates with an object', function() {
@@ -552,40 +552,40 @@
 				bar: [fn5, fn1]
 			});
 
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn3, fn2, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn4, fn1, fn5]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn3, fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn4, fn1, fn5]);
 
 			ee.manipulateListeners(true, {
 				foo: fn1,
 				bar: [fn5, fn4]
 			});
 
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn3, fn2]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn3, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn1]);
 
 			ee.manipulateListeners(true, {
 				foo: [fn3, fn2],
 				bar: fn1
 			});
 
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), []);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
 		});
 
 		test('does not execute listeners just after they are added in another listeners', function() {
 			var check = [];
 
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); });
-			ee.addListener('baz', function() {
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); });
+			ee.addEventListener('baz', function() {
 				check.push(3);
 
-				ee.addListener('baz', function() {
+				ee.addEventListener('baz', function() {
 					check.push(4);
 				});
 			});
-			ee.addListener('baz', function() { check.push(5); });
-			ee.addListener('baz', function() { check.push(6); });
+			ee.addEventListener('baz', function() { check.push(5); });
+			ee.addEventListener('baz', function() { check.push(6); });
 
 			ee.emitEvent('baz');
 
@@ -593,7 +593,7 @@
 		});
 	});
 
-	suite('addListeners', function() {
+	suite('addEventListeners', function() {
 		var ee;
 		var fn1 = function(){};
 		var fn2 = function(){};
@@ -606,27 +606,27 @@
 		});
 
 		test('adds with an array', function() {
-			ee.addListeners('foo', [fn1, fn2, fn3]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn3, fn2, fn1]);
+			ee.addEventListeners('foo', [fn1, fn2, fn3]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn3, fn2, fn1]);
 
-			ee.addListeners('foo', [fn4, fn5]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn3, fn2, fn1, fn5, fn4]);
+			ee.addEventListeners('foo', [fn4, fn5]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn3, fn2, fn1, fn5, fn4]);
 		});
 
 		test('adds with an object', function() {
-			ee.addListeners({
+			ee.addEventListeners({
 				foo: fn1,
 				bar: [fn2, fn3]
 			});
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn3, fn2]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn3, fn2]);
 
-			ee.addListeners({
+			ee.addEventListeners({
 				foo: [fn4],
 				bar: fn5
 			});
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1, fn4]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn3, fn2, fn5]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1, fn4]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn3, fn2, fn5]);
 		});
 
 		test('allows you to add listeners by regex', function ()
@@ -634,15 +634,15 @@
 			var check = [];
 
 			ee.defineEvents(['bar', 'baz']);
-			ee.addListeners('foo', [function() { check.push(1); }]);
-			ee.addListeners(/ba[rz]/, [function() { check.push(2); }, function() { check.push(3); }]);
+			ee.addEventListeners('foo', [function() { check.push(1); }]);
+			ee.addEventListeners(/ba[rz]/, [function() { check.push(2); }, function() { check.push(3); }]);
 			ee.emitEvent(/ba[rz]/);
 
 			assert.strictEqual(flattenCheck(check), '2,2,3,3');
 		});
 	});
 
-	suite('removeListeners', function() {
+	suite('removeEventListeners', function() {
 		var ee;
 		var fn1 = function(){};
 		var fn2 = function(){};
@@ -655,49 +655,49 @@
 		});
 
 		test('removes with an array', function() {
-			ee.addListeners('foo', [fn1, fn2, fn3, fn4, fn5]);
-			ee.removeListeners('foo', [fn2, fn3]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn1]);
+			ee.addEventListeners('foo', [fn1, fn2, fn3, fn4, fn5]);
+			ee.removeEventListeners('foo', [fn2, fn3]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn1]);
 
-			ee.removeListeners('foo', [fn5, fn4]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn1]);
+			ee.removeEventListeners('foo', [fn5, fn4]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn1]);
 
-			ee.removeListeners('foo', [fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), []);
+			ee.removeEventListeners('foo', [fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), []);
 		});
 
 		test('removes with an object', function() {
-			ee.addListeners({
+			ee.addEventListeners({
 				foo: [fn1, fn2, fn3, fn4, fn5],
 				bar: [fn1, fn2, fn3, fn4, fn5]
 			});
 
-			ee.removeListeners({
+			ee.removeEventListeners({
 				foo: fn2,
 				bar: [fn3, fn4, fn5]
 			});
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn3, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn3, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn2, fn1]);
 
-			ee.removeListeners({
+			ee.removeEventListeners({
 				foo: [fn3],
 				bar: [fn2, fn1]
 			});
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), []);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), []);
 		});
 
 		test('removes with a regex', function() {
-			ee.addListeners({
+			ee.addEventListeners({
 				foo: [fn1, fn2, fn3, fn4, fn5],
 				bar: [fn1, fn2, fn3, fn4, fn5],
 				baz: [fn1, fn2, fn3, fn4, fn5]
 			});
 
-			ee.removeListeners(/ba[rz]/, [fn3, fn4]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('foo')), [fn5, fn4, fn3, fn2, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('bar')), [fn5, fn2, fn1]);
-			assert.deepEqual(ee.flattenListeners(ee.getListeners('baz')), [fn5, fn2, fn1]);
+			ee.removeEventListeners(/ba[rz]/, [fn3, fn4]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('foo')), [fn5, fn4, fn3, fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('bar')), [fn5, fn2, fn1]);
+			assert.deepEqual(ee.flattenListeners(ee.getEventListeners('baz')), [fn5, fn2, fn1]);
 		});
 	});
 
@@ -711,11 +711,11 @@
 		test('will remove if left as default and returning true', function () {
 			var check = [];
 
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); return true; });
-			ee.addListener('baz', function() { check.push(3); return false; });
-			ee.addListener('baz', function() { check.push(4); return 1; });
-			ee.addListener('baz', function() { check.push(5); return true; });
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); return true; });
+			ee.addEventListener('baz', function() { check.push(3); return false; });
+			ee.addEventListener('baz', function() { check.push(4); return 1; });
+			ee.addEventListener('baz', function() { check.push(5); return true; });
 
 			ee.emitEvent('baz');
 			ee.emitEvent('baz');
@@ -727,12 +727,12 @@
 			var check = [];
 
 			ee.setOnceReturnValue('only-once');
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); return true; });
-			ee.addListener('baz', function() { check.push(3); return 'only-once'; });
-			ee.addListener('baz', function() { check.push(4); return 1; });
-			ee.addListener('baz', function() { check.push(5); return 'only-once'; });
-			ee.addListener('baz', function() { check.push(6); return true; });
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); return true; });
+			ee.addEventListener('baz', function() { check.push(3); return 'only-once'; });
+			ee.addEventListener('baz', function() { check.push(4); return 1; });
+			ee.addEventListener('baz', function() { check.push(5); return 'only-once'; });
+			ee.addEventListener('baz', function() { check.push(6); return true; });
 
 			ee.emitEvent('baz');
 			ee.emitEvent('baz');
@@ -744,12 +744,12 @@
 			var check = [];
 
 			ee.setOnceReturnValue('only-once');
-			ee.addListener('baz', function() { check.push(1); });
-			ee.addListener('baz', function() { check.push(2); return true; });
-			ee.addListener('baz', function() { check.push(3); return 'not-only-once'; });
-			ee.addListener('baz', function() { check.push(4); return 1; });
-			ee.addListener('baz', function() { check.push(5); return 'only-once'; });
-			ee.addListener('baz', function() { check.push(6); return true; });
+			ee.addEventListener('baz', function() { check.push(1); });
+			ee.addEventListener('baz', function() { check.push(2); return true; });
+			ee.addEventListener('baz', function() { check.push(3); return 'not-only-once'; });
+			ee.addEventListener('baz', function() { check.push(4); return 1; });
+			ee.addEventListener('baz', function() { check.push(5); return 'only-once'; });
+			ee.addEventListener('baz', function() { check.push(6); return true; });
 
 			ee.emitEvent('baz');
 			ee.emitEvent('baz');
@@ -760,11 +760,11 @@
 
 	suite('alias', function () {
 		test('that it works when overwriting target method', function () {
-			var addListener = EventEmitter.prototype.addListener;
+			var addEventListener = EventEmitter.prototype.addEventListener;
 			var res;
 			var rand = Math.random();
 
-			EventEmitter.prototype.addListener = function () {
+			EventEmitter.prototype.addEventListener = function () {
 				res = rand;
 			};
 
@@ -773,7 +773,7 @@
 
 			assert.strictEqual(res, rand);
 
-			EventEmitter.prototype.addListener = addListener;
+			EventEmitter.prototype.addEventListener = addEventListener;
 		});
 	});
 
